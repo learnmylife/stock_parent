@@ -1,5 +1,6 @@
 package com.itsun.stock.config;
 
+import com.itsun.stock.pojo.domain.TaskThreadPoolInfo;
 import com.itsun.stock.pojo.vo.StockInfoConfig;
 import com.itsun.stock.utils.IdWorker;
 import com.itsun.stock.utils.ParserStockInfoUtil;
@@ -7,7 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@EnableConfigurationProperties(StockInfoConfig.class)//开启常用参数配置bean
+@EnableConfigurationProperties({StockInfoConfig.class, TaskThreadPoolInfo.class})//开启常用参数配置bean
 @Configuration
 public class CommonConfig {
     /**

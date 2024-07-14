@@ -24,6 +24,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -59,6 +60,8 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
     private RabbitTemplate rabbitTemplate;
     @Autowired
     private ParserStockInfoUtil parserStockInfoUtil;
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @Override
     public void getInnerMarketInfo() {
@@ -170,54 +173,56 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
             return;
         }
         String body = responseEntity.getBody();
+
+        List<StockBlockRtInfo> stockBlockRtInfos = parserStockInfoUtil.parse4StockBlock(body);
 //        System.out.println(body);
-        String reg="\\{([^{}]*)\\}";
-        //编译表达式,获取编译对象
-        Pattern pattern = Pattern.compile(reg);
-        //匹配字符串
-        Matcher matcher = pattern.matcher(body);
-        // 创建一个Map来存储解析后的键值对
-        Map<String, List> map = new HashMap<>();
-        while (matcher.find()) {
-            // 提取匹配到的内容
-            String result = matcher.group(0); // 包含花括号
-
-            // 解析提取到的JSON内容
-            JSONObject jsonObject = new JSONObject(result);
-
-            // 遍历JSON对象并存入Map
-            Iterator<String> keys = jsonObject.keys();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                String value = (String) jsonObject.get(key);
-                List<String> list = new ArrayList<>();
-                String[] parts = value.split(",");
-                for (String part : parts) {
-                    list.add(part.trim());
-                }
-                map.put(key, list);
-            }
-        }
-        // 输出Map中的内容
-        ArrayList<StockBlockRtInfo> stockBlockRtInfos = new ArrayList<>();
-        for (Map.Entry<String, List> entry : map.entrySet()) {
-
-            StockBlockRtInfo stockBlockRtInfo = new StockBlockRtInfo();
-            List value = entry.getValue();
-            System.out.println(value);
-            stockBlockRtInfo.setBlockName((String) value.get(1));
-            stockBlockRtInfo.setTradeAmount(Long.valueOf((String) value.get(6)));
-            stockBlockRtInfo.setTradeVolume(BigDecimal.valueOf(Double.parseDouble((String) value.get(7))));
-            stockBlockRtInfo.setAvgPrice(BigDecimal.valueOf(Double.parseDouble((String) value.get(3))));
-            stockBlockRtInfo.setCompanyNum(Integer.valueOf((String) value.get(2)));
-            stockBlockRtInfo.setLabel((String) value.get(0));
-            stockBlockRtInfo.setUpdownRate(BigDecimal.valueOf(Double.parseDouble((String) value.get(5))));
-
-            Date curTime = DateTime.now().toDate();
-            stockBlockRtInfo.setCurTime(curTime);
-            stockBlockRtInfo.setId(idWorker.nextId());
-            stockBlockRtInfos.add(stockBlockRtInfo);
-        }
+//        String reg="\\{([^{}]*)\\}";
+//        //编译表达式,获取编译对象
+//        Pattern pattern = Pattern.compile(reg);
+//        //匹配字符串
+//        Matcher matcher = pattern.matcher(body);
+//        // 创建一个Map来存储解析后的键值对
+//        Map<String, List> map = new HashMap<>();
+//        while (matcher.find()) {
+//            // 提取匹配到的内容
+//            String result = matcher.group(0); // 包含花括号
+//
+//            // 解析提取到的JSON内容
+//            JSONObject jsonObject = new JSONObject(result);
+//
+//            // 遍历JSON对象并存入Map
+//            Iterator<String> keys = jsonObject.keys();
+//            while (keys.hasNext()) {
+//                String key = keys.next();
+//                String value = (String) jsonObject.get(key);
+//                List<String> list = new ArrayList<>();
+//                String[] parts = value.split(",");
+//                for (String part : parts) {
+//                    list.add(part.trim());
+//                }
+//                map.put(key, list);
+//            }
+//        }
+//        // 输出Map中的内容
+//        ArrayList<StockBlockRtInfo> stockBlockRtInfos = new ArrayList<>();
+//        for (Map.Entry<String, List> entry : map.entrySet()) {
+//
+//            StockBlockRtInfo stockBlockRtInfo = new StockBlockRtInfo();
+//            List value = entry.getValue();
+//            System.out.println(value);
+//            stockBlockRtInfo.setBlockName((String) value.get(1));
+//            stockBlockRtInfo.setTradeAmount(Long.valueOf((String) value.get(6)));
+//            stockBlockRtInfo.setTradeVolume(BigDecimal.valueOf(Double.parseDouble((String) value.get(7))));
+//            stockBlockRtInfo.setAvgPrice(BigDecimal.valueOf(Double.parseDouble((String) value.get(3))));
+//            stockBlockRtInfo.setCompanyNum(Integer.valueOf((String) value.get(2)));
+//            stockBlockRtInfo.setLabel((String) value.get(0));
+//            stockBlockRtInfo.setUpdownRate(BigDecimal.valueOf(Double.parseDouble((String) value.get(5))));
+//
+//            Date curTime = DateTime.now().toDate();
+//            stockBlockRtInfo.setCurTime(curTime);
+//            stockBlockRtInfo.setId(idWorker.nextId());
+//            stockBlockRtInfos.add(stockBlockRtInfo);
+//        }
         //批量插入
         if (CollectionUtils.isEmpty(stockBlockRtInfos)) {
             return;
@@ -242,9 +247,11 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
         //一次性查询过多，我们将需要查询的数据先进行分片处理，每次最多查询20条股票数据
         Lists.partition(stockIds,5).forEach(list->{
 //            // 从线程池中获取线程,执行任务
-//            threadPoolTaskExecutor.execute(()->{
-//                String name = Thread.currentThread().getName();
-//                System.out.println("----------------------"+name);
+            threadPoolTaskExecutor.execute(()->{
+
+                String name = Thread.currentThread().getName();
+                System.out.println("----------------------"+name);
+
 //                //拼接股票url地址
                 String stockUrl=stockInfoConfig.getMarketUrl()+String.join(",",list);
                 System.out.println("请求路径: "+stockUrl);
@@ -258,8 +265,8 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
                 if (i>0){
                     System.out.println("添加成功...");
                 }
-//            });
-
+            });
+            System.out.println("...");
         });
     }
 }

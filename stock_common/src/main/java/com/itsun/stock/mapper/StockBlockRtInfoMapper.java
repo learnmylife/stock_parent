@@ -31,6 +31,6 @@ public interface StockBlockRtInfoMapper {
 
     List<StockBlockDomain> getStockBlock(@Param("date") Date date, @Param("lim") Integer lim);
 
-    int insertBatch(@Param("infos") ArrayList<StockBlockRtInfo> stockBlockRtInfos);
+    int insertBatch(@Param("infos") List<StockBlockRtInfo> stockBlockRtInfos);
 }
 
