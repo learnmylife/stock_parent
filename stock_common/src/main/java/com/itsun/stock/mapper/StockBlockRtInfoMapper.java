@@ -1,6 +1,13 @@
 package com.itsun.stock.mapper;
 
+import com.itsun.stock.pojo.domain.StockBlockDomain;
+import com.itsun.stock.pojo.domain.StockUpdownDomain;
 import com.itsun.stock.pojo.entity.StockBlockRtInfo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
 * @author sunhb
@@ -22,4 +29,8 @@ public interface StockBlockRtInfoMapper {
 
     int updateByPrimaryKey(StockBlockRtInfo record);
 
+    List<StockBlockDomain> getStockBlock(@Param("date") Date date, @Param("lim") Integer lim);
+
+    int insertBatch(@Param("infos") ArrayList<StockBlockRtInfo> stockBlockRtInfos);
 }
+

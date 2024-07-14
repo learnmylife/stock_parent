@@ -2,12 +2,16 @@ package com.itsun.stock.vo.resp;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
+@ApiModel
 public class LoginRespVo {
     /**
      * 用户ID
      * 将Long类型数字进行json格式转化时，转成String格式类型, 否则前端数字超过16位,失真
      */
+    @ApiModelProperty("ID")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
@@ -32,14 +36,17 @@ public class LoginRespVo {
     /**
      * 电话
      */
+    @ApiModelProperty("电话")
     private String phone;
     /**
      * 用户名
      */
+    @ApiModelProperty("用户名")
     private String username;
     /**
      * 昵称
      */
+    @ApiModelProperty("昵称")
     private String nickName;
 
     public String getPhone() {

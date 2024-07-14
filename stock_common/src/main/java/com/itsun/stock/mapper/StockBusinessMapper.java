@@ -2,6 +2,8 @@ package com.itsun.stock.mapper;
 
 import com.itsun.stock.pojo.entity.StockBusiness;
 
+import java.util.List;
+
 /**
 * @author sunhb
 * @description 针对表【stock_business(主营业务表)】的数据库操作Mapper
@@ -9,7 +11,11 @@ import com.itsun.stock.pojo.entity.StockBusiness;
 * @Entity com.itsun.stock.pojo.entity.StockBusiness
 */
 public interface StockBusinessMapper {
-
+    /**
+     * 获取所有股票的code
+     * @return
+     */
+    List<String> getStockIds();
     int deleteByPrimaryKey(Long id);
 
     int insert(StockBusiness record);

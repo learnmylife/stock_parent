@@ -1,5 +1,5 @@
 server:
-  port: 8091
+  port: 8092
 spring:
   # 配置mysql数据源
   datasource:
@@ -19,7 +19,7 @@ spring:
       maxWait: 60000
 #  加载其他配置文件,多个文件时,用","隔开
   profiles:
-    active: cache, stock, mq
+    active: stock,mq
 
 mybatis:
   configuration:

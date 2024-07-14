@@ -28,6 +28,22 @@
         from stock_block_rt_info
         where  id = #{id,jdbcType=BIGINT} 
     </select>
+    <select id="getStockBlock" resultType="com.itsun.stock.pojo.domain.StockBlockDomain">
+        select
+            sbr.company_num  as companyNum,
+            sbr.trade_amount as tradeAmt,
+            sbr.label        as code,
+            sbr.avg_price    as avgPrice,
+            sbr.block_name   as name,
+            sbr.cur_time     as curDate,
+            sbr.trade_volume as tradeVol,
+            sbr.updown_rate  as updownRate
+        from stock_block_rt_info as sbr
+        where sbr.cur_time=#{date}
+        order by sbr.trade_volume desc
+            limit #{lim}
+    </select>
+
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from stock_block_rt_info
@@ -68,6 +84,20 @@
                 <if test="tradeVolume != null">#{tradeVolume,jdbcType=DECIMAL},</if>
                 <if test="curTime != null">#{curTime,jdbcType=TIMESTAMP},</if>
         </trim>
+    </insert>
+    <insert id="insertBatch">
+        insert into stock_block_rt_info
+        ( id,label,block_name
+        ,company_num,avg_price,updown_rate
+        ,trade_amount,trade_volume,cur_time
+        )
+        values
+        <foreach collection="infos" item="sbi" separator=",">
+            (#{sbi.id,jdbcType=BIGINT},#{sbi.label,jdbcType=VARCHAR},#{sbi.blockName,jdbcType=VARCHAR}
+               ,#{sbi.companyNum,jdbcType=INTEGER},#{sbi.avgPrice,jdbcType=DECIMAL},#{sbi.updownRate,jdbcType=DECIMAL}
+               ,#{sbi.tradeAmount,jdbcType=BIGINT},#{sbi.tradeVolume,jdbcType=DECIMAL},#{sbi.curTime,jdbcType=TIMESTAMP}
+               )
+        </foreach>
     </insert>
     <update id="updateByPrimaryKeySelective" parameterType="com.itsun.stock.pojo.entity.StockBlockRtInfo">
         update stock_block_rt_info

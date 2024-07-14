@@ -1,6 +1,15 @@
 package com.itsun.stock.mapper;
 
+import com.itsun.stock.pojo.domain.Stock4EvrDayDomain;
+import com.itsun.stock.pojo.domain.Stock4EvrWeekDomain;
+import com.itsun.stock.pojo.domain.Stock4MinuteDomain;
+import com.itsun.stock.pojo.domain.StockUpdownDomain;
 import com.itsun.stock.pojo.entity.StockRtInfo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author sunhb
@@ -21,5 +30,24 @@ public interface StockRtInfoMapper {
     int updateByPrimaryKeySelective(StockRtInfo record);
 
     int updateByPrimaryKey(StockRtInfo record);
+    List<StockUpdownDomain> getStockUpdownByTime(@Param("date") Date date);
 
+
+    List<Map> getUpdownCount(@Param("startDate") Date startDate, @Param("lastDate") Date lastDate, @Param("flag") int i);
+
+    List<Map> getStockUpDownScopeCount(@Param("date") Date date);
+
+    List<Stock4MinuteDomain> getStockInfoByCodeAndDate(@Param("code") String code,
+                                                       @Param("startTime") Date startTime,
+                                                       @Param("endTime") Date endTime);
+
+    List<Stock4EvrDayDomain> getStockInfo4EvrDay(@Param("stockCode") String stockCode,
+                                                 @Param("startTime") Date startTime,
+                                                 @Param("endTime") Date endTime,
+                                                 @Param("flag") Integer flag);
+
+    List<Stock4EvrWeekDomain> getStockInfo4Week(@Param("stockCode") String stockCode,
+                                                @Param("startTime") Date startTime,
+                                                @Param("endTime") Date endTime);
+    int insertBatch(@Param("infos") List<StockRtInfo> infos);
 }
