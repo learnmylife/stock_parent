@@ -139,12 +139,53 @@
             min(sri.open_price) as openPrice,
             max(sri.cur_price) as maxPrice,
             max(sri.cur_price) as closePrice,
-            date_format(max(sri.cur_time), '%Y%m%d') as mxTime,
+            max(sri.cur_time) as mxTime,
             sri.stock_code as stock_code
         from stock_rt_info as sri
         where sri.stock_code = #{stockCode}
           and sri.cur_time between #{startTime} and #{endTime}
         group by date_format( sri.cur_time, '%Y%m%u' );
+    </select>
+    <select id="getByCodeFuzzy" resultType="java.util.Map">
+        select distinct
+            sri.stock_code as code,
+            sri.stock_name as name
+        from stock_rt_info as sri
+        where sri.stock_code like #{searchStrFuzzy}
+    </select>
+    <select id="getStockDetailInfo" resultType="com.itsun.stock.pojo.domain.StockDetailDomain">
+        select
+            sri.trade_amount as tradeAmt,
+            sri.pre_close_price as preClosePrice,
+            sri.min_price as lowPrice,
+            sri.max_price as highPrice,
+            sri.open_price as openPrice,
+            sri.trade_amount as tradePrice,
+            sri.cur_price as tradePrice,
+            sri.cur_time as curDate
+        from stock_rt_info as sri
+        where cur_time in (
+            select
+                max(sri2.cur_time)
+            from stock_rt_info as sri2
+            where sri2.stock_code = #{code}
+              and cur_time between #{startTime} and #{endTime}
+        )
+          and stock_code = #{code}
+    </select>
+    <select id="getStockSecondInfo" resultType="map">
+        select
+            date_format(sri.cur_time,'%Y-%m-%d-%k:%i') as date,
+            sri.trade_amount as tradeAmt,
+            sri.trade_volume as tradeVol,
+            sri.cur_price as tradePrice
+        from stock_rt_info as sri
+        where sri.stock_code = #{code}
+            and sri.cur_time between #{startTime} and #{endTime}
+        order by date_format(sri.cur_time,'%Y%m%d%k') DESC
+        limit 10
+
+
     </select>
 
 

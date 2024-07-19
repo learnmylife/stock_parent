@@ -2,13 +2,17 @@ package com.itsun.stock.service.Impl;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.LineCaptcha;
+import com.google.common.base.Strings;
 import com.itsun.stock.constant.StockConstant;
 import com.itsun.stock.mapper.SysUserMapper;
+import com.itsun.stock.pojo.entity.SysPermission;
 import com.itsun.stock.pojo.entity.SysUser;
+import com.itsun.stock.service.PremissionService;
 import com.itsun.stock.service.UserService;
 import com.itsun.stock.utils.IdWorker;
 import com.itsun.stock.vo.req.LoginReqVo;
 import com.itsun.stock.vo.resp.LoginRespVo;
+import com.itsun.stock.vo.resp.PermissionRespNodeVo;
 import com.itsun.stock.vo.resp.R;
 import com.itsun.stock.vo.resp.ResponseCode;
 import io.swagger.annotations.ApiOperation;
@@ -21,9 +25,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service("userService")
 @Slf4j
@@ -37,6 +43,8 @@ public class UserServiceImpl implements UserService {
     private IdWorker idWorker;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private PremissionService premissionService;
     @Override
     public SysUser findByUserName(String username) {
         return sysUserMapper.findUserByUsername(username);
@@ -71,6 +79,18 @@ public class UserServiceImpl implements UserService {
             LoginRespVo loginRespVo = new LoginRespVo();
             //直接将user中相同的属性,赋值到新的对象中
             BeanUtils.copyProperties(user,loginRespVo);
+
+            List<SysPermission> permissions = premissionService.getPermissionByUserId(String.valueOf(user.getId()));
+            System.out.println(permissions);
+            //获取树状权限菜单数据
+            List<PermissionRespNodeVo> tree=premissionService.getTree(permissions, "0", true);
+            //获取菜单按钮集合
+            List<String> authBtnPerms = permissions.stream().filter(per -> !Strings.isNullOrEmpty(per.getCode()) && per.getType() == 3).map(per -> per.getCode()).collect(Collectors.toList());
+
+            loginRespVo.setMenus(tree);
+            loginRespVo.setPermissions(authBtnPerms);
+
+
             return R.ok(loginRespVo);
         }else{
             return R.error(ResponseCode.USERNAME_OR_PASSWORD_ERROR);

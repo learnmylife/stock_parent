@@ -2,6 +2,8 @@ package com.itsun.stock.mapper;
 
 import com.itsun.stock.pojo.entity.SysRole;
 
+import java.util.List;
+
 /**
 * @author sunhb
 * @description 针对表【sys_role(角色表)】的数据库操作Mapper
@@ -22,4 +24,5 @@ public interface SysRoleMapper {
 
     int updateByPrimaryKey(SysRole record);
 
+    List<SysRole> getRoleByUserId(Long id);
 }

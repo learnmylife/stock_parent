@@ -26,6 +26,20 @@
         from stock_outer_market_index_info
         where  id = #{id,jdbcType=BIGINT} 
     </select>
+    <select id="getOuterMarketIndexInfo" resultType="com.itsun.stock.pojo.domain.externalMarketDomain">
+        select somii.market_name as name,
+               somii.cur_point as curPoint,
+               somii.updown as updown,
+               somii.rose as rose,
+               somii.cur_time as curTime
+        from stock_outer_market_index_info as somii
+        where somii.cur_time = #{time}
+        order by date_format(somii.cur_time,'%Y%m%d') and somii.cur_point DESC
+        limit #{count};
+    </select>
+    <select id="getOutStockIds" resultType="java.lang.String">
+        select distinct market_code from stock_outer_market_index_info
+    </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from stock_outer_market_index_info
@@ -60,6 +74,18 @@
                 <if test="rose != null">#{rose,jdbcType=DECIMAL},</if>
                 <if test="curTime != null">#{curTime,jdbcType=TIMESTAMP},</if>
         </trim>
+    </insert>
+    <insert id="insertBatch">
+        insert into stock_outer_market_index_info
+        ( id,market_code,market_name
+        ,cur_point,updown,rose
+        ,cur_time)
+        values
+            <foreach collection="infos" item="somii" separator=",">
+            (#{somii.id,jdbcType=BIGINT},#{somii.marketCode,jdbcType=CHAR},#{somii.marketName,jdbcType=VARCHAR}
+               ,#{somii.curPoint,jdbcType=DECIMAL},#{somii.updown,jdbcType=DECIMAL},#{somii.rose,jdbcType=DECIMAL}
+               ,#{somii.curTime,jdbcType=TIMESTAMP})
+            </foreach>
     </insert>
     <update id="updateByPrimaryKeySelective" parameterType="com.itsun.stock.pojo.entity.StockOuterMarketIndexInfo">
         update stock_outer_market_index_info

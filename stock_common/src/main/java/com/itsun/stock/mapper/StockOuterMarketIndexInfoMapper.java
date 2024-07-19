@@ -1,6 +1,11 @@
 package com.itsun.stock.mapper;
 
+import com.itsun.stock.pojo.domain.externalMarketDomain;
 import com.itsun.stock.pojo.entity.StockOuterMarketIndexInfo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
 
 /**
 * @author sunhb
@@ -21,5 +26,10 @@ public interface StockOuterMarketIndexInfoMapper {
     int updateByPrimaryKeySelective(StockOuterMarketIndexInfo record);
 
     int updateByPrimaryKey(StockOuterMarketIndexInfo record);
+
+    List<externalMarketDomain> getOuterMarketIndexInfo(@Param("time") Date endTime, @Param("count") int count);
+
+    List<String> getOutStockIds();
+    int insertBatch(@Param("infos") List<StockOuterMarketIndexInfo> list);
 
 }

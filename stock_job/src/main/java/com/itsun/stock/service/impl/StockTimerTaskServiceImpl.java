@@ -2,12 +2,10 @@ package com.itsun.stock.service.impl;
 
 import com.google.common.collect.Lists;
 import com.itsun.stock.constant.ParseType;
-import com.itsun.stock.mapper.StockBlockRtInfoMapper;
-import com.itsun.stock.mapper.StockBusinessMapper;
-import com.itsun.stock.mapper.StockMarketIndexInfoMapper;
-import com.itsun.stock.mapper.StockRtInfoMapper;
+import com.itsun.stock.mapper.*;
 import com.itsun.stock.pojo.entity.StockBlockRtInfo;
 import com.itsun.stock.pojo.entity.StockMarketIndexInfo;
+import com.itsun.stock.pojo.entity.StockOuterMarketIndexInfo;
 import com.itsun.stock.pojo.entity.StockRtInfo;
 import com.itsun.stock.pojo.vo.StockInfoConfig;
 import com.itsun.stock.service.StockTimerTaskService;
@@ -55,6 +53,8 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
     private StockRtInfoMapper stockRtInfoMapper;
     @Autowired
     private StockBusinessMapper stockBusinessMapper;
+    @Autowired
+    private StockOuterMarketIndexInfoMapper stockOuterMarketIndexInfoMapper;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -267,6 +267,38 @@ public class StockTimerTaskServiceImpl implements StockTimerTaskService {
                 }
             });
             System.out.println("...");
+        });
+    }
+
+    @Override
+    public void getOutStockRtIndex() {
+        //批量获取股票ID集合
+        List<String> stockIds = stockOuterMarketIndexInfoMapper.getOutStockIds();
+        //计算出符合sina命名规范的股票id数据
+//        stockIds = stockIds.stream().map(id -> {
+//            return id.startsWith("6") ? "sh" + id : "sz" + id;
+//        }).collect(Collectors.toList());
+        //设置公共请求头对象
+        //设置请求头数据
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Referer","https://finance.sina.com.cn/stock/");
+        headers.add("User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        Lists.partition(stockIds,5).forEach(code->{
+            String stockUrl=stockInfoConfig.getOutUrl()+String.join(",",code);
+            System.out.println("请求路径: "+stockUrl);
+//                //获取响应数据
+            String result = restTemplate.postForObject(stockUrl,entity,String.class);
+            List<StockOuterMarketIndexInfo> list = parserStockInfoUtil.parser4StockOrMarketInfo(result, 2);
+
+            System.out.println(list);
+            //TODO 批量插入
+            int i = stockOuterMarketIndexInfoMapper.insertBatch(list);
+            if (i>0){
+                System.out.println("添加成功...");
+            }
+
         });
     }
 }

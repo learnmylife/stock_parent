@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -113,6 +114,35 @@ public class StockController {
     @RequestMapping("/stock/screen/weekkline")
     public R<List<Stock4EvrWeekDomain>> getWeekKLinData(@RequestParam("code") String stockCode){
         return stockService.stockCreenWkLine(stockCode);
+    }
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "count", value = "", required = true)
+    })
+    @ApiOperation(value = "获取外盘数据", notes = "", httpMethod = "GET")
+    @GetMapping("/external/index")
+    public R<List<externalMarketDomain>> getexternalMarketData(@RequestParam(value = "count", defaultValue = "4") Integer count){
+        return stockService.stockExternalMarket(count);
+    }
+    @GetMapping("/stock/search")
+    public R<List<Map>> getexternalMarketData(String searchStr){
+        return stockService.stockSearchMarket(searchStr);
+    }
+    @ApiOperation(value = "个股主营业务查询接口", notes = "", httpMethod = "GET")
+    @GetMapping("/stock/describe")
+    public R<StockDescribe> getStockDescribe(@RequestParam("code") String stockCode){
+        return stockService.getStockDescribe(stockCode);
+    }
+    @ApiOperation(value = "获取个股最新分时行情数据", notes = "", httpMethod = "GET")
+    @GetMapping("/stock/screen/second/detail")
+    public R<StockDetailDomain> getStockDetail(@RequestParam("code") String stockCode){
+        return stockService.getStockDetail(stockCode);
+    }
+
+    @ApiOperation(value = "个股交易流水行情数据查询", notes = "", httpMethod = "GET")
+    @GetMapping("/stock/screen/second")
+    public R<List<Map<String,Object>>> getStockSecond(@RequestParam("code") String stockCode){
+        return stockService.getStockSecond(stockCode);
     }
 
 }

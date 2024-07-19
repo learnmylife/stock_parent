@@ -1,9 +1,6 @@
 package com.itsun.stock.mapper;
 
-import com.itsun.stock.pojo.domain.Stock4EvrDayDomain;
-import com.itsun.stock.pojo.domain.Stock4EvrWeekDomain;
-import com.itsun.stock.pojo.domain.Stock4MinuteDomain;
-import com.itsun.stock.pojo.domain.StockUpdownDomain;
+import com.itsun.stock.pojo.domain.*;
 import com.itsun.stock.pojo.entity.StockRtInfo;
 import org.apache.ibatis.annotations.Param;
 
@@ -50,4 +47,14 @@ public interface StockRtInfoMapper {
                                                 @Param("startTime") Date startTime,
                                                 @Param("endTime") Date endTime);
     int insertBatch(@Param("infos") List<StockRtInfo> infos);
+
+    List<Map> getByCodeFuzzy(String searchStrFuzzy);
+
+    StockDetailDomain getStockDetailInfo(@Param("startTime") Date startTime,
+                                         @Param("endTime") Date endTime,
+                                         @Param("code") String stockCode);
+
+    List<Map<String, Object>> getStockSecondInfo(@Param("startTime") Date startTime,
+                                                 @Param("endTime") Date endTime,
+                                                 @Param("code") String stockCode);
 }

@@ -39,4 +39,5 @@ public class UserController {
     public R<Map> getCapchaCode(){
         return userService.getCapchaCode();
     }
+
 }

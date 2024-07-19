@@ -17,6 +17,16 @@ public class StockInfoConfig {
 
     private String blockUrl;
 
+    private String outUrl;
+
+    public String getOutUrl() {
+        return outUrl;
+    }
+
+    public void setOutUrl(String outUrl) {
+        this.outUrl = outUrl;
+    }
+
     private List<String> upDownRange;
 
     @Override
@@ -26,6 +36,7 @@ public class StockInfoConfig {
                 ", outer=" + outer +
                 ", marketUrl='" + marketUrl + '\'' +
                 ", blockUrl='" + blockUrl + '\'' +
+                ", outUrl='" + outUrl + '\'' +
                 ", upDownRange=" + upDownRange +
                 '}';
     }

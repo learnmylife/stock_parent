@@ -10,6 +10,7 @@ stock:
     - b_FSSTI
   marketUrl: http://hq.sinajs.cn/list=
   blockUrl: http://vip.stock.finance.sina.com.cn/q/view/newSinaHy.php
+  outUrl: http://hq.sinajs.cn/list=
 
 task:
   pool:

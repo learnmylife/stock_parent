@@ -32,4 +32,15 @@ public interface StockService {
     R<List<Stock4EvrDayDomain>> stockCreenDkLine(String stockCode,Integer flag);
 
     R<List<Stock4EvrWeekDomain>> stockCreenWkLine(String stockCode);
+
+    R<List<externalMarketDomain>> stockExternalMarket(Integer count);
+
+
+    R<List<Map>> stockSearchMarket(String searchStr);
+
+    R<StockDescribe> getStockDescribe(String stockCode);
+
+    R<StockDetailDomain> getStockDetail(String stockCode);
+
+    R<List<Map<String,Object>>> getStockSecond(String stockCode);
 }

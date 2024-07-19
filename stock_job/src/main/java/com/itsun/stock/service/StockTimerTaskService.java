@@ -10,4 +10,5 @@ public interface StockTimerTaskService {
     void getInneBlockInfo() throws JSONException;
 
     void getStockRtIndex();
+    void getOutStockRtIndex();
 }

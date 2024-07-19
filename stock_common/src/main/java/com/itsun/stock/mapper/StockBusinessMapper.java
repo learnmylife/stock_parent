@@ -1,6 +1,8 @@
 package com.itsun.stock.mapper;
 
+import com.itsun.stock.pojo.domain.StockDescribe;
 import com.itsun.stock.pojo.entity.StockBusiness;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -27,5 +29,7 @@ public interface StockBusinessMapper {
     int updateByPrimaryKeySelective(StockBusiness record);
 
     int updateByPrimaryKey(StockBusiness record);
+
+    StockDescribe getStockInfo(@Param("stockCode") String stockCode);
 
 }

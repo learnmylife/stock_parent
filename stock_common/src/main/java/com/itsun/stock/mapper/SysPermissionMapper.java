@@ -1,6 +1,9 @@
 package com.itsun.stock.mapper;
 
 import com.itsun.stock.pojo.entity.SysPermission;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author sunhb
@@ -22,4 +25,5 @@ public interface SysPermissionMapper {
 
     int updateByPrimaryKey(SysPermission record);
 
+    List<SysPermission> getPermissionByUserId(@Param("userId") String userId);
 }

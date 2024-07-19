@@ -27,6 +27,14 @@
     <select id="getStockIds" resultType="java.lang.String">
         select stock_code from stock_business
     </select>
+    <select id="getStockInfo" resultType="com.itsun.stock.pojo.domain.StockDescribe">
+        select  sb.stock_code as code,
+                sb.block_name as trade,
+                sb.business as business,
+                sb.stock_name as name
+        from stock_business as sb
+        where sb.stock_code = #{stockCode}
+    </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from stock_business

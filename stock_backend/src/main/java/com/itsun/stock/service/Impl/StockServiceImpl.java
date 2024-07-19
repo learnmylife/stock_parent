@@ -1,13 +1,12 @@
 package com.itsun.stock.service.Impl;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.itsun.stock.mapper.StockBlockRtInfoMapper;
-import com.itsun.stock.mapper.StockMarketIndexInfoMapper;
-import com.itsun.stock.mapper.StockRtInfoMapper;
+import com.itsun.stock.mapper.*;
 import com.itsun.stock.pojo.domain.*;
 import com.itsun.stock.pojo.vo.StockInfoConfig;
 import com.itsun.stock.service.StockService;
@@ -18,7 +17,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -27,6 +25,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
 
+
+// sharding不支持嵌套,部分查询需要拆分成两次查询
 @ApiModel
 @Service
 public class StockServiceImpl implements StockService {
@@ -42,6 +42,10 @@ public class StockServiceImpl implements StockService {
     private StockRtInfoMapper stockRtInfoMapper;
     @Autowired
     private Cache<String,Object> caffeineCache;
+    @Autowired
+    private StockOuterMarketIndexInfoMapper stockOuterMarketIndexInfoMapper;
+    @Autowired
+    private StockBusinessMapper stockBusinessMapper;
 
     @ApiModelProperty(hidden = true)
     @Autowired
@@ -55,7 +59,7 @@ public class StockServiceImpl implements StockService {
             //获取最新股票时间点
             Date date = DateTimeUtil.getLastDate4Stock(DateTime.now()).toDate();
             //可以先写假数据
-            date = DateTime.parse("2022-07-07 14:50:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+            date = DateTime.parse("2022-01-03 14:55:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
             //获取大盘编码
             List<String> inner = stockInfoConfig.getInner();
             //mapper
@@ -264,7 +268,7 @@ public class StockServiceImpl implements StockService {
         DateTime dateTime = parse.minusMonths(2);
         Date startTime = dateTime.toDate();
 //        startTime=DateTime.parse("2022-01-01 09:30:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
-
+//        stockRtInfoMapper.getMaxDate()
         List<Stock4EvrDayDomain> data= stockRtInfoMapper.getStockInfo4EvrDay(stockCode,startTime,endTime,flag);
         //3.组装数据，响应
         return R.ok(data);
@@ -285,5 +289,82 @@ public class StockServiceImpl implements StockService {
         //3.组装数据，响应
         return R.ok(data);
     }
+
+
+    @Override
+    public R<List<externalMarketDomain>> stockExternalMarket(Integer count) {
+        DateTime lastDate4Stock = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        Date endTime = lastDate4Stock.toDate();
+        //TODO mockdata
+        DateTime parse = DateTime.parse("2022-05-18 15:58:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        endTime= parse.toDate();
+
+        List<externalMarketDomain> infos =  stockOuterMarketIndexInfoMapper.getOuterMarketIndexInfo(endTime,count);
+
+        return R.ok(infos);
+
+
+    }
+
+    @Override
+    public R<List<Map>> stockSearchMarket(String searchStr) {
+        if (searchStr.equals("")){
+            return R.error(ResponseCode.DATA_ERROR.getMessage());
+        }
+        //检查参数校验
+        if(StringUtils.isBlank(searchStr)){
+            return R.error(ResponseCode.DATA_ERROR.getMessage());
+        }
+        // 对参数进行模糊处理
+        String searchStrFuzzy = "%" + searchStr + "%";
+        //根据股票代码模糊查询
+        List<Map>stockRtInfoList=stockRtInfoMapper.getByCodeFuzzy(searchStrFuzzy);
+        return R.ok(stockRtInfoList);
+    }
+
+    @Override
+    public R<StockDescribe> getStockDescribe(String stockCode) {
+        if (stockCode.equals("")){
+            return R.error(ResponseCode.DATA_ERROR.getMessage());
+        }
+        StockDescribe infos =  stockBusinessMapper.getStockInfo(stockCode);
+        return R.ok(infos);
+
+    }
+
+    @Override
+    public R<StockDetailDomain> getStockDetail(String stockCode) {
+        DateTime lastDate4Stock = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        Date endTime = lastDate4Stock.toDate();
+        //TODO mockdata
+        DateTime parse = DateTime.parse("2022-01-07 15:00:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        endTime= parse.toDate();
+
+        DateTime dateTime = parse.minusDays(3);
+        Date startTime = dateTime.toDate();
+
+        StockDetailDomain infos =  stockRtInfoMapper.getStockDetailInfo(startTime,endTime,stockCode);
+
+        return R.ok(infos);
+
+    }
+
+    @Override
+    public R<List<Map<String,Object>>> getStockSecond(String stockCode) {
+        DateTime lastDate4Stock = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        Date endTime = lastDate4Stock.toDate();
+        //TODO mockdata
+        DateTime parse = DateTime.parse("2022-01-07 15:00:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        endTime= parse.toDate();
+
+        DateTime dateTime = parse.minusDays(3);
+        Date startTime = dateTime.toDate();
+
+        List<Map<String,Object>> infos =  stockRtInfoMapper.getStockSecondInfo(startTime,endTime,stockCode);
+
+        return R.ok(infos);
+
+    }
+
 
 }
