@@ -155,6 +155,7 @@
 
     </dependencyManagement>
     <build>
+
         <!-- 插件的版本锁定 -->
         <pluginManagement>
             <plugins>
